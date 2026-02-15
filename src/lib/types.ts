@@ -21,8 +21,8 @@ export interface Course {
   totalDuration: string;
   modules: Module[];
   isMonothematic: boolean;
-  createdAt: Timestamp;
-  lastAccessedAt: Timestamp;
+  createdAt: Timestamp | string;
+  lastAccessedAt: Timestamp | string;
 }
 
 export interface Module {

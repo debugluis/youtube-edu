@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import youtube, { extractPlaylistId, parseDuration, formatDuration } from "@/lib/youtube";
 import anthropic from "@/lib/anthropic";
 import { adminDb } from "@/lib/firebase-admin";
-import { Timestamp } from "firebase-admin/firestore";
 import type { Course, Module, Video, ClaudeModuleResponse } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
@@ -253,8 +252,8 @@ Respond ONLY with valid JSON using this structure:
       totalDuration: formatDuration(totalSeconds),
       modules,
       isMonothematic: moduleStructure.isMonothematic,
-      createdAt: Timestamp.now(),
-      lastAccessedAt: Timestamp.now(),
+      createdAt: new Date().toISOString(),
+      lastAccessedAt: new Date().toISOString(),
     };
 
     // 7. Save to Firestore (Admin SDK bypasses security rules)
