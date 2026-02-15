@@ -1,0 +1,171 @@
+"use client";
+
+import { useEffect, useRef, useCallback, useState } from "react";
+import { ExternalLink, CheckCircle2 } from "lucide-react";
+import type { Video } from "@/lib/types";
+
+declare global {
+  interface Window {
+    YT: typeof YT;
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
+interface VideoPlayerProps {
+  video: Video;
+  isCompleted: boolean;
+  onProgress: (watchedSeconds: number, percentage: number) => void;
+  onComplete: (method: "auto" | "manual") => void;
+}
+
+export default function VideoPlayer({
+  video,
+  isCompleted,
+  onProgress,
+  onComplete,
+}: VideoPlayerProps) {
+  const playerRef = useRef<YT.Player | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [manualComplete, setManualComplete] = useState(isCompleted);
+
+  // Load YouTube IFrame API
+  useEffect(() => {
+    if (window.YT) return;
+
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+  }, []);
+
+  const startTracking = useCallback(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    intervalRef.current = setInterval(() => {
+      if (!playerRef.current) return;
+      try {
+        const currentTime = playerRef.current.getCurrentTime();
+        const duration = playerRef.current.getDuration();
+        if (duration > 0) {
+          const percentage = (currentTime / duration) * 100;
+          onProgress(currentTime, percentage);
+
+          // Auto-complete at 90%
+          if (percentage >= 90 && !isCompleted) {
+            onComplete("auto");
+          }
+        }
+      } catch {
+        // Player might not be ready
+      }
+    }, 10000);
+  }, [onProgress, onComplete, isCompleted]);
+
+  const stopTracking = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
+  // Initialize player when video changes
+  useEffect(() => {
+    setManualComplete(isCompleted);
+
+    const initPlayer = () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
+
+      playerRef.current = new window.YT.Player("yt-player", {
+        videoId: video.id,
+        playerVars: {
+          autoplay: 0,
+          modestbranding: 1,
+          rel: 0,
+        },
+        events: {
+          onStateChange: (event: YT.OnStateChangeEvent) => {
+            if (event.data === window.YT.PlayerState.PLAYING) {
+              startTracking();
+            } else if (
+              event.data === window.YT.PlayerState.PAUSED ||
+              event.data === window.YT.PlayerState.ENDED
+            ) {
+              stopTracking();
+            }
+
+            if (event.data === window.YT.PlayerState.ENDED) {
+              onComplete("auto");
+            }
+          },
+        },
+      });
+    };
+
+    if (window.YT && window.YT.Player) {
+      initPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = initPlayer;
+    }
+
+    return () => {
+      stopTracking();
+    };
+  }, [video.id, startTracking, stopTracking, onComplete, isCompleted]);
+
+  const handleManualToggle = () => {
+    if (!manualComplete) {
+      setManualComplete(true);
+      onComplete("manual");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Player */}
+      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
+        <div id="yt-player" ref={containerRef} className="h-full w-full" />
+        {isCompleted && (
+          <div className="pointer-events-none absolute right-3 top-3">
+            <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-medium text-white">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Completado
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Video info */}
+      <div className="space-y-3">
+        <h2 className="text-xl font-semibold text-white">{video.title}</h2>
+
+        <div className="flex flex-wrap items-center gap-3">
+          <a
+            href={`https://youtube.com/watch?v=${video.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Ver en YouTube
+          </a>
+
+          <button
+            onClick={handleManualToggle}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition-colors ${
+              manualComplete || isCompleted
+                ? "bg-emerald-500/20 text-emerald-400"
+                : "border border-white/10 text-gray-300 hover:bg-white/5 hover:text-white"
+            }`}
+          >
+            <CheckCircle2 className="h-4 w-4" />
+            {manualComplete || isCompleted ? "Marcado como visto" : "Marcar como visto"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
