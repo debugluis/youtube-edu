@@ -20,13 +20,13 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
     setError("");
 
     if (!url.trim()) {
-      setError("Ingresa una URL de playlist de YouTube");
+      setError("Enter a YouTube playlist URL");
       return;
     }
 
     const playlistPattern = /[?&]list=([a-zA-Z0-9_-]+)/;
     if (!playlistPattern.test(url)) {
-      setError("URL no válida. Asegúrate de que sea una playlist de YouTube");
+      setError("Invalid URL. Make sure it's a YouTube playlist");
       return;
     }
 
@@ -41,7 +41,7 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Error al procesar la playlist");
+        throw new Error(data.error || "Failed to process playlist");
       }
 
       const { course } = await response.json();
@@ -49,7 +49,7 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
       setUrl("");
       onCourseCreated(course.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setIsProcessingPlaylist(false);
     }
@@ -59,10 +59,10 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
     <div className="rounded-xl border border-white/10 bg-[#1a1a2e] p-6">
       <div className="mb-4 flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-emerald-500" />
-        <h2 className="text-lg font-semibold text-white">Crear nuevo curso</h2>
+        <h2 className="text-lg font-semibold text-white">Create new course</h2>
       </div>
       <p className="mb-4 text-sm text-gray-400">
-        Pega la URL de una playlist de YouTube y la IA la organizará en módulos
+        Paste a YouTube playlist URL and AI will organize it into modules
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -86,10 +86,10 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
             {isProcessingPlaylist ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Procesando...
+                Processing...
               </>
             ) : (
-              "Crear Curso"
+              "Create Course"
             )}
           </button>
         </div>

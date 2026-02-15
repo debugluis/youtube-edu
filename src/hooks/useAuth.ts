@@ -52,11 +52,11 @@ export function useAuth() {
       console.error("Sign in error:", firebaseError.code, firebaseError.message);
 
       if (firebaseError.code === "auth/popup-blocked") {
-        setError("El popup fue bloqueado. Permite popups para localhost en tu navegador.");
+        setError("Popup was blocked. Allow popups for localhost in your browser.");
       } else if (firebaseError.code === "auth/popup-closed-by-user") {
         // User closed the popup, not an error
       } else {
-        setError("Error al iniciar sesión. Intenta de nuevo.");
+        setError("Sign in failed. Please try again.");
       }
     }
   };

@@ -5,7 +5,6 @@ import { X } from "lucide-react";
 import type { Course, UserProgress } from "@/lib/types";
 import ModuleCard from "@/components/course/ModuleCard";
 import ProgressBar from "@/components/course/ProgressBar";
-import { calculateModulePercentage } from "@/utils/progress";
 
 interface SidebarProps {
   course: Course;
@@ -33,13 +32,23 @@ export default function Sidebar({ course, progress }: SidebarProps) {
         }`}
       >
         <div className="flex items-center justify-between p-4 lg:hidden">
-          <span className="text-sm font-medium text-white">Contenido</span>
+          <span className="text-sm font-medium text-white">Contents</span>
           <button
             onClick={() => setSidebarOpen(false)}
             className="rounded-lg p-1 text-gray-400 hover:bg-white/10 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
+        </div>
+
+        <div className="border-b border-white/10 p-4">
+          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
+            Overall Progress
+          </p>
+          <ProgressBar
+            percentage={progress?.overallPercentage || 0}
+            size="lg"
+          />
         </div>
 
         <div className="space-y-1 p-3">
@@ -55,30 +64,6 @@ export default function Sidebar({ course, progress }: SidebarProps) {
               }}
             />
           ))}
-        </div>
-
-        <div className="border-t border-white/10 p-4">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-500">
-            Progreso General
-          </p>
-          <ProgressBar
-            percentage={progress?.overallPercentage || 0}
-            size="lg"
-          />
-          <div className="mt-3 space-y-2">
-            {course.modules.map((module) => (
-              <div key={module.id}>
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span className="truncate">{module.title}</span>
-                  <span>{calculateModulePercentage(module, completedVideos)}%</span>
-                </div>
-                <ProgressBar
-                  percentage={calculateModulePercentage(module, completedVideos)}
-                  size="sm"
-                />
-              </div>
-            ))}
-          </div>
         </div>
       </aside>
     </>

@@ -23,17 +23,17 @@ export default function StatsOverview({ courses, progressMap }: StatsOverviewPro
   const stats = [
     {
       icon: BookOpen,
-      label: "Cursos",
+      label: "Courses",
       value: totalCourses.toString(),
     },
     {
       icon: CheckCircle2,
-      label: "Videos completados",
+      label: "Videos completed",
       value: totalCompletedVideos.toString(),
     },
     {
       icon: Clock,
-      label: "Tiempo estudiado",
+      label: "Study time",
       value: formatStudyTime(totalStudyTime),
     },
   ];

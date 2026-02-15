@@ -8,7 +8,7 @@ export default function LoginButton() {
   return (
     <button
       onClick={signIn}
-      className="flex items-center gap-3 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-800 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
+      className="mx-auto flex items-center gap-3 rounded-lg bg-white px-6 py-3 text-sm font-medium text-gray-800 shadow-lg transition-all hover:scale-105 hover:shadow-xl"
     >
       <svg className="h-5 w-5" viewBox="0 0 24 24">
         <path
@@ -28,7 +28,7 @@ export default function LoginButton() {
           fill="#EA4335"
         />
       </svg>
-      Iniciar sesión con Google
+      Sign in with Google
     </button>
   );
 }

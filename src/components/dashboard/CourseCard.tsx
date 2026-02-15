@@ -53,7 +53,7 @@ export default function CourseCard({ course, progress, onClick }: CourseCardProp
         </div>
 
         <ProgressBar percentage={percentage} size="sm" />
-        <p className="mt-1.5 text-xs text-gray-500">{percentage}% completado</p>
+        <p className="mt-1.5 text-xs text-gray-500">{percentage}% complete</p>
       </div>
     </motion.div>
   );

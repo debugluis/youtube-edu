@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Coffee } from "lucide-react";
 import {
   collection,
   query,
@@ -106,7 +107,7 @@ export default function DashboardPage() {
           {/* Courses grid */}
           <div>
             <h2 className="mb-4 text-xl font-semibold text-white">
-              Mis Cursos
+              My Courses
             </h2>
 
             {isLoadingCourses ? (
@@ -116,8 +117,7 @@ export default function DashboardPage() {
             ) : courses.length === 0 ? (
               <div className="rounded-xl border border-dashed border-white/10 py-16 text-center">
                 <p className="text-gray-500">
-                  Aún no tienes cursos. Pega una URL de playlist arriba para
-                  comenzar.
+                  No courses yet. Paste a playlist URL above to get started.
                 </p>
               </div>
             ) : (
@@ -134,6 +134,18 @@ export default function DashboardPage() {
             )}
           </div>
         </motion.div>
+
+        <div className="mt-12 flex justify-center pb-8">
+          <a
+            href="https://buymeacoffee.com/debugluis"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-3 text-base text-gray-300 transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/20 hover:text-white"
+          >
+            <Coffee className="h-4 w-4" />
+            Buy me a coffee
+          </a>
+        </div>
       </main>
     </div>
   );

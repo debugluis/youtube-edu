@@ -28,7 +28,7 @@ export default function ProgressBar({
       </div>
       {showLabel && (
         <div className="mt-1 flex justify-between text-xs text-gray-400">
-          <span>{clamped}% completado</span>
+          <span>{clamped}% complete</span>
         </div>
       )}
     </div>

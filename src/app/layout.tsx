@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "YouTube Edu - Aprende con YouTube",
+  title: "YouTube Edu - Learn with YouTube",
   description:
-    "Transforma playlists de YouTube en cursos estructurados con progreso, módulos y logros",
+    "Turn YouTube playlists into structured courses with progress tracking, modules, and achievements",
 };
 
 export default function RootLayout({
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
+    <html lang="en" className="dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-[#0f0f0f] font-sans text-white antialiased`}
       >

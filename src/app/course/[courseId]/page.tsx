@@ -8,14 +8,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCourseStore } from "@/stores/courseStore";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { getNextVideo } from "@/utils/progress";
+import { Coffee } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Sidebar from "@/components/ui/Sidebar";
 import VideoPlayer from "@/components/course/VideoPlayer";
 import CourseHeader from "@/components/course/CourseHeader";
-import ProgressBar from "@/components/course/ProgressBar";
 import { AchievementBadge, AchievementToast } from "@/components/course/AchievementBadge";
-import { calculateModulePercentage } from "@/utils/progress";
-import type { Course, Video } from "@/lib/types";
+import type { Course } from "@/lib/types";
 
 export default function CoursePage() {
   const params = useParams();
@@ -76,14 +75,15 @@ export default function CoursePage() {
     }
   }, [currentCourse, currentVideoId, progress, setCurrentVideoId]);
 
-  // Find current video object
-  const currentVideo = useMemo((): Video | null => {
-    if (!currentCourse || !currentVideoId) return null;
+  // Find current video object and its parent module
+  const { currentVideo, currentModule } = useMemo(() => {
+    if (!currentCourse || !currentVideoId)
+      return { currentVideo: null, currentModule: null };
     for (const module of currentCourse.modules) {
       const video = module.videos.find((v) => v.id === currentVideoId);
-      if (video) return video;
+      if (video) return { currentVideo: video, currentModule: module };
     }
-    return null;
+    return { currentVideo: null, currentModule: null };
   }, [currentCourse, currentVideoId]);
 
   const isVideoCompleted = useMemo(
@@ -93,6 +93,15 @@ export default function CoursePage() {
         : false,
     [currentVideoId, progress]
   );
+
+  // Find the next sequential video across all modules
+  const nextVideoId = useMemo(() => {
+    if (!currentCourse || !currentVideoId) return null;
+    const allVideos = currentCourse.modules.flatMap((m) => m.videos);
+    const currentIndex = allVideos.findIndex((v) => v.id === currentVideoId);
+    if (currentIndex === -1 || currentIndex >= allVideos.length - 1) return null;
+    return allVideos[currentIndex + 1].id;
+  }, [currentCourse, currentVideoId]);
 
   const handleProgress = useCallback(
     (watchedSeconds: number, percentage: number) => {
@@ -151,42 +160,23 @@ export default function CoursePage() {
               />
             )}
 
-            {/* Course info */}
+            {/* Module info */}
             <div className="mt-8 space-y-6">
-              <CourseHeader course={currentCourse} progress={progress} />
-
-              {/* Module progress */}
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-400">
-                  Progreso por Módulo
-                </h3>
-                {currentCourse.modules.map((module) => {
-                  const pct = calculateModulePercentage(
-                    module,
-                    progress?.completedVideos || []
-                  );
-                  return (
-                    <div
-                      key={module.id}
-                      className="rounded-lg border border-white/5 bg-[#1a1a2e] p-4"
-                    >
-                      <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm text-white">
-                          {module.title}
-                        </span>
-                        <span className="text-xs text-gray-500">{pct}%</span>
-                      </div>
-                      <ProgressBar percentage={pct} size="sm" />
-                    </div>
-                  );
-                })}
-              </div>
+              {currentModule && (
+                <CourseHeader
+                  module={currentModule}
+                  completedVideos={progress?.completedVideos || []}
+                  isVideoCompleted={isVideoCompleted}
+                  nextVideoId={nextVideoId}
+                  onNextVideo={() => nextVideoId && setCurrentVideoId(nextVideoId)}
+                />
+              )}
 
               {/* Achievements */}
               {progress && progress.achievements.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-gray-400">
-                    Logros Desbloqueados
+                    Achievements Unlocked
                   </h3>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                     {progress.achievements.map((achievement) => (
@@ -198,6 +188,18 @@ export default function CoursePage() {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="mt-12 flex justify-center pb-8">
+              <a
+                href="https://buymeacoffee.com/debugluis"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-3 text-base text-gray-300 transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/20 hover:text-white"
+              >
+                <Coffee className="h-4 w-4" />
+                Buy me a coffee
+              </a>
             </div>
           </div>
         </main>

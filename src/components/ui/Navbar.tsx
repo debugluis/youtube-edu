@@ -54,7 +54,7 @@ export default function Navbar({ title, showMenuButton = false }: NavbarProps) {
           <button
             onClick={signOut}
             className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
-            title="Cerrar sesión"
+            title="Sign out"
           >
             <LogOut className="h-4 w-4" />
           </button>

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
 
   if (!playlistUrl) {
     return NextResponse.json(
-      { error: "playlistUrl es requerido" },
+      { error: "playlistUrl is required" },
       { status: 400 }
     );
   }
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const playlistId = extractPlaylistId(playlistUrl);
   if (!playlistId) {
     return NextResponse.json(
-      { error: "URL no válida" },
+      { error: "Invalid URL" },
       { status: 400 }
     );
   }
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const playlist = response.data.items?.[0];
     if (!playlist) {
       return NextResponse.json(
-        { error: "Playlist no encontrada" },
+        { error: "Playlist not found" },
         { status: 404 }
       );
     }
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Error fetching YouTube data:", error);
     return NextResponse.json(
-      { error: "Error al obtener datos de YouTube" },
+      { error: "Failed to fetch YouTube data" },
       { status: 500 }
     );
   }

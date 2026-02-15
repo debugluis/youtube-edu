@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ExternalLink, CheckCircle2 } from "lucide-react";
 import type { Video } from "@/lib/types";
 
@@ -29,6 +29,15 @@ export default function VideoPlayer({
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [manualComplete, setManualComplete] = useState(isCompleted);
 
+  // Keep stable refs so the player init effect doesn't re-run on callback changes
+  const onProgressRef = useRef(onProgress);
+  const onCompleteRef = useRef(onComplete);
+  const isCompletedRef = useRef(isCompleted);
+
+  useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+  useEffect(() => { isCompletedRef.current = isCompleted; }, [isCompleted]);
+
   // Load YouTube IFrame API
   useEffect(() => {
     if (window.YT) return;
@@ -39,39 +48,41 @@ export default function VideoPlayer({
     firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
   }, []);
 
-  const startTracking = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-
-    intervalRef.current = setInterval(() => {
-      if (!playerRef.current) return;
-      try {
-        const currentTime = playerRef.current.getCurrentTime();
-        const duration = playerRef.current.getDuration();
-        if (duration > 0) {
-          const percentage = (currentTime / duration) * 100;
-          onProgress(currentTime, percentage);
-
-          // Auto-complete at 90%
-          if (percentage >= 90 && !isCompleted) {
-            onComplete("auto");
-          }
-        }
-      } catch {
-        // Player might not be ready
-      }
-    }, 10000);
-  }, [onProgress, onComplete, isCompleted]);
-
-  const stopTracking = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-  }, []);
-
-  // Initialize player when video changes
+  // Sync manualComplete when isCompleted prop changes (video switch)
   useEffect(() => {
     setManualComplete(isCompleted);
+  }, [isCompleted]);
+
+  // Initialize player — only re-runs when video.id changes
+  useEffect(() => {
+    const startTracking = () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+
+      intervalRef.current = setInterval(() => {
+        if (!playerRef.current) return;
+        try {
+          const currentTime = playerRef.current.getCurrentTime();
+          const duration = playerRef.current.getDuration();
+          if (duration > 0) {
+            const percentage = (currentTime / duration) * 100;
+            onProgressRef.current(currentTime, percentage);
+
+            if (percentage >= 90 && !isCompletedRef.current) {
+              onCompleteRef.current("auto");
+            }
+          }
+        } catch {
+          // Player might not be ready
+        }
+      }, 10000);
+    };
+
+    const stopTracking = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
 
     const initPlayer = () => {
       if (playerRef.current) {
@@ -98,7 +109,7 @@ export default function VideoPlayer({
             }
 
             if (event.data === window.YT.PlayerState.ENDED) {
-              onComplete("auto");
+              onCompleteRef.current("auto");
             }
           },
         },
@@ -113,8 +124,12 @@ export default function VideoPlayer({
 
     return () => {
       stopTracking();
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+      }
     };
-  }, [video.id, startTracking, stopTracking, onComplete, isCompleted]);
+  }, [video.id]);
 
   const handleManualToggle = () => {
     if (!manualComplete) {
@@ -132,7 +147,7 @@ export default function VideoPlayer({
           <div className="pointer-events-none absolute right-3 top-3">
             <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-medium text-white">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Completado
+              Completed
             </div>
           </div>
         )}
@@ -150,7 +165,7 @@ export default function VideoPlayer({
             className="flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
           >
             <ExternalLink className="h-4 w-4" />
-            Ver en YouTube
+            Watch on YouTube
           </a>
 
           <button
@@ -162,7 +177,7 @@ export default function VideoPlayer({
             }`}
           >
             <CheckCircle2 className="h-4 w-4" />
-            {manualComplete || isCompleted ? "Marcado como visto" : "Marcar como visto"}
+            {manualComplete || isCompleted ? "Marked as watched" : "Mark as watched"}
           </button>
         </div>
       </div>

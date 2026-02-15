@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     if (!playlistUrl || !userId) {
       return NextResponse.json(
-        { error: "playlistUrl y userId son requeridos" },
+        { error: "playlistUrl and userId are required" },
         { status: 400 }
       );
     }
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const playlistId = extractPlaylistId(playlistUrl);
     if (!playlistId) {
       return NextResponse.json(
-        { error: "URL no válida. Asegúrate de que sea una playlist de YouTube" },
+        { error: "Invalid URL. Make sure it's a YouTube playlist" },
         { status: 400 }
       );
     }
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const playlist = playlistInfo.data.items?.[0];
     if (!playlist) {
       return NextResponse.json(
-        { error: "Esta playlist es privada o no existe" },
+        { error: "This playlist is private or does not exist" },
         { status: 404 }
       );
     }
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
         if (videoId) {
           allItems.push({
             videoId,
-            title: item.snippet?.title || "Sin título",
+            title: item.snippet?.title || "Untitled",
             description: item.snippet?.description || "",
             thumbnailUrl:
               item.snippet?.thumbnails?.high?.url ||
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     if (allItems.length === 0) {
       return NextResponse.json(
-        { error: "La playlist está vacía" },
+        { error: "The playlist is empty" },
         { status: 400 }
       );
     }
@@ -133,31 +133,31 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: "user",
-            content: `Eres un asistente educativo. Te voy a dar los datos de una playlist de YouTube.
-Tu trabajo es analizar los videos y organizarlos en módulos lógicos para un curso educativo.
+            content: `You are an educational assistant. I will give you the data from a YouTube playlist.
+Your job is to analyze the videos and organize them into logical modules for an educational course.
 
-Datos de la playlist:
-- Título: ${playlist.snippet?.title}
-- Descripción: ${playlist.snippet?.description}
+Playlist data:
+- Title: ${playlist.snippet?.title}
+- Description: ${playlist.snippet?.description}
 - Videos:
 ${videoSummaries.join("\n")}
 
-Instrucciones:
-1. Analiza si la playlist es monotemática (un solo tema) o multitemática (varios temas/secciones).
-2. Si es monotemática: crea un solo módulo con todos los videos.
-3. Si es multitemática: agrupa los videos en módulos lógicos (capítulos, secciones, áreas temáticas).
-4. Dale a cada módulo un nombre descriptivo y una breve descripción.
-5. Mantén el orden original de los videos dentro de cada módulo.
-6. No cambies el orden global de los videos, solo agrúpalos.
+Instructions:
+1. Analyze whether the playlist is monothematic (single topic) or multithematic (multiple topics/sections).
+2. If monothematic: create a single module with all videos.
+3. If multithematic: group the videos into logical modules (chapters, sections, topic areas).
+4. Give each module a descriptive name and a brief description.
+5. Maintain the original order of videos within each module.
+6. Do not change the global order of videos, only group them.
 
-Responde SOLO con un JSON válido con esta estructura:
+Respond ONLY with valid JSON using this structure:
 {
   "isMonothematic": boolean,
   "modules": [
     {
       "id": "mod_1",
-      "title": "Nombre del módulo",
-      "description": "Breve descripción",
+      "title": "Module name",
+      "description": "Brief description",
       "videoIndices": [0, 1, 2]
     }
   ]
@@ -182,8 +182,8 @@ Responde SOLO con un JSON válido con esta estructura:
         modules: [
           {
             id: "mod_1",
-            title: playlist.snippet?.title || "Módulo Principal",
-            description: "Todos los videos de la playlist",
+            title: playlist.snippet?.title || "Main Module",
+            description: "All videos in the playlist",
             videoIndices: allItems.map((_, i) => i),
           },
         ],
@@ -226,7 +226,7 @@ Responde SOLO con un JSON válido con esta estructura:
       userId,
       playlistId,
       playlistUrl,
-      title: playlist.snippet?.title || "Sin título",
+      title: playlist.snippet?.title || "Untitled",
       description: playlist.snippet?.description || "",
       thumbnailUrl:
         playlist.snippet?.thumbnails?.high?.url ||
@@ -247,7 +247,7 @@ Responde SOLO con un JSON válido con esta estructura:
   } catch (error) {
     console.error("Error processing playlist:", error);
     return NextResponse.json(
-      { error: "Error al procesar la playlist. Intenta de nuevo." },
+      { error: "Failed to process playlist. Please try again." },
       { status: 500 }
     );
   }

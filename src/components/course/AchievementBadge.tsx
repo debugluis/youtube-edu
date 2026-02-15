@@ -22,7 +22,7 @@ export function AchievementBadge({ type, isNew }: AchievementBadgeProps) {
       </div>
       {isNew && (
         <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-400">
-          Nuevo
+          New
         </span>
       )}
     </div>
@@ -58,7 +58,7 @@ export function AchievementToast({ type, onDismiss }: AchievementToastProps) {
 
           <div className="relative">
             <p className="mb-1 text-xs font-medium uppercase tracking-wider text-emerald-500">
-              Logro Desbloqueado
+              Achievement Unlocked
             </p>
             <div className="mt-3 flex items-center gap-3">
               <motion.span

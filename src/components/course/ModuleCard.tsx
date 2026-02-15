@@ -21,7 +21,7 @@ export default function ModuleCard({
   currentVideoId,
   onVideoSelect,
 }: ModuleCardProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   const percentage = calculateModulePercentage(module, completedVideos);
 
   return (

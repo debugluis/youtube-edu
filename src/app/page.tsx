@@ -30,21 +30,21 @@ export default function Home() {
   const features = [
     {
       icon: BookOpen,
-      title: "Cursos Estructurados",
+      title: "Structured Courses",
       description:
-        "La IA organiza tus playlists en módulos lógicos para un aprendizaje ordenado",
+        "AI organizes your playlists into logical modules for structured learning",
     },
     {
       icon: BarChart3,
-      title: "Progreso Detallado",
+      title: "Detailed Progress",
       description:
-        "Rastrea tu avance por video, módulo y curso con estadísticas en tiempo real",
+        "Track your progress by video, module, and course with real-time stats",
     },
     {
       icon: Trophy,
-      title: "Sistema de Logros",
+      title: "Achievement System",
       description:
-        "Desbloquea logros mientras aprendes y mantén tu motivación al máximo",
+        "Unlock achievements as you learn and keep your motivation at its peak",
     },
   ];
 
@@ -71,8 +71,8 @@ export default function Home() {
         </h1>
 
         <p className="mx-auto mb-8 max-w-md text-lg text-gray-400">
-          Transforma cualquier playlist de YouTube en un curso estructurado con
-          progreso, módulos y logros
+          Turn any YouTube playlist into a structured course with progress
+          tracking, modules, and achievements
         </p>
 
         <LoginButton />
