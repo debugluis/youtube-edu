@@ -34,7 +34,7 @@ This wasn't a one-click generated project. It was an iterative process of defini
 
 ## Status
 
-🚧 Under development.
+Live at [youtube-edu.vercel.app](https://youtube-edu.vercel.app/)
 
 ## Author
 
