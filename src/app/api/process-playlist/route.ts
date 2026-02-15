@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import youtube, { extractPlaylistId, parseDuration, formatDuration } from "@/lib/youtube";
 import anthropic from "@/lib/anthropic";
-import { doc, setDoc, Timestamp } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebase-admin";
+import { Timestamp } from "firebase-admin/firestore";
 import type { Course, Module, Video, ClaudeModuleResponse } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
@@ -125,6 +125,8 @@ export async function POST(request: NextRequest) {
     );
 
     // 5. Call Claude to structure modules
+    const channelTitle = playlist.snippet?.channelTitle || "";
+
     let moduleStructure: ClaudeModuleResponse;
     try {
       const claudeResponse = await anthropic.messages.create({
@@ -135,23 +137,29 @@ export async function POST(request: NextRequest) {
             role: "user",
             content: `You are an educational assistant. I will give you the data from a YouTube playlist.
 Your job is to analyze the videos and organize them into logical modules for an educational course.
+You must also suggest a URL slug and a professional display name for this course.
 
 Playlist data:
 - Title: ${playlist.snippet?.title}
+- Channel: ${channelTitle}
 - Description: ${playlist.snippet?.description}
 - Videos:
 ${videoSummaries.join("\n")}
 
 Instructions:
-1. Analyze whether the playlist is monothematic (single topic) or multithematic (multiple topics/sections).
-2. If monothematic: create a single module with all videos.
-3. If multithematic: group the videos into logical modules (chapters, sections, topic areas).
-4. Give each module a descriptive name and a brief description.
-5. Maintain the original order of videos within each module.
-6. Do not change the global order of videos, only group them.
+1. Generate a "slug": a short, kebab-case URL identifier based on the channel name and topic (e.g., "messer-security-plus", "traversy-react-crash-course"). Use only lowercase letters, numbers, and hyphens. Max 60 characters.
+2. Generate a "displayName": a professional course title combining the channel/instructor and topic (e.g., "CompTIA Security+ with Professor Messer", "React Crash Course by Traversy Media").
+3. Analyze whether the playlist is monothematic (single topic) or multithematic (multiple topics/sections).
+4. If monothematic: create a single module with all videos.
+5. If multithematic: group the videos into logical modules (chapters, sections, topic areas).
+6. Give each module a descriptive name and a brief description.
+7. Maintain the original order of videos within each module.
+8. Do not change the global order of videos, only group them.
 
 Respond ONLY with valid JSON using this structure:
 {
+  "slug": "channel-topic-keyword",
+  "displayName": "Professional Course Title",
   "isMonothematic": boolean,
   "modules": [
     {
@@ -178,6 +186,8 @@ Respond ONLY with valid JSON using this structure:
       console.error("Claude error, using fallback:", error);
       // Fallback: single module with all videos
       moduleStructure = {
+        slug: slugify(playlist.snippet?.title || "course"),
+        displayName: playlist.snippet?.title || "Untitled Course",
         isMonothematic: true,
         modules: [
           {
@@ -190,8 +200,14 @@ Respond ONLY with valid JSON using this structure:
       };
     }
 
-    // 6. Build Course object
-    const courseId = `course_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    // 6. Build Course object — use slug as the document ID
+    // Validate/fallback the slug
+    let slug = moduleStructure.slug;
+    if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+      slug = slugify(playlist.snippet?.title || "course");
+    }
+
+    const courseId = slug;
 
     const modules: Module[] = moduleStructure.modules.map((mod, moduleIndex) => {
       const videos: Video[] = mod.videoIndices.map((videoIndex, order) => {
@@ -227,6 +243,7 @@ Respond ONLY with valid JSON using this structure:
       playlistId,
       playlistUrl,
       title: playlist.snippet?.title || "Untitled",
+      displayName: moduleStructure.displayName || playlist.snippet?.title || "Untitled",
       description: playlist.snippet?.description || "",
       thumbnailUrl:
         playlist.snippet?.thumbnails?.high?.url ||
@@ -240,8 +257,8 @@ Respond ONLY with valid JSON using this structure:
       lastAccessedAt: Timestamp.now(),
     };
 
-    // 7. Save to Firestore
-    await setDoc(doc(db, "courses", courseId), course);
+    // 7. Save to Firestore (Admin SDK bypasses security rules)
+    await adminDb.collection("courses").doc(courseId).set(course);
 
     return NextResponse.json({ course });
   } catch (error) {
@@ -270,3 +287,13 @@ async function fetchWithRetry<T>(
   }
   throw new Error("Max retries reached");
 }
+
+// Convert a string to a kebab-case slug
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
+}
+

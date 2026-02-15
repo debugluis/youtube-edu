@@ -14,6 +14,7 @@ export interface Course {
   playlistId: string;
   playlistUrl: string;
   title: string;
+  displayName: string;
   description: string;
   thumbnailUrl: string;
   totalVideos: number;
@@ -98,6 +99,8 @@ export interface PlaylistProcessResponse {
 }
 
 export interface ClaudeModuleResponse {
+  slug: string;
+  displayName: string;
   isMonothematic: boolean;
   modules: {
     id: string;

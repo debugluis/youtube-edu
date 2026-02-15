@@ -38,7 +38,7 @@ export default function CourseCard({ course, progress, onClick }: CourseCardProp
       {/* Content */}
       <div className="p-4">
         <h3 className="mb-2 line-clamp-2 text-sm font-medium text-white group-hover:text-emerald-400">
-          {course.title}
+          {course.displayName || course.title}
         </h3>
 
         <div className="mb-3 flex items-center gap-3 text-xs text-gray-500">

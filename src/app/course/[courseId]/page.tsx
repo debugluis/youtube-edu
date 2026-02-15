@@ -139,7 +139,7 @@ export default function CoursePage() {
 
   return (
     <div className="min-h-screen">
-      <Navbar title={currentCourse.title} showMenuButton />
+      <Navbar title={currentCourse.displayName || currentCourse.title} showMenuButton />
 
       <div className="flex">
         <Sidebar course={currentCourse} progress={progress} />
