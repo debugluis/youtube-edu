@@ -8,11 +8,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCourseStore } from "@/stores/courseStore";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { getNextVideo } from "@/utils/progress";
+import { Trophy } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Sidebar from "@/components/ui/Sidebar";
+import AchievementsSidebar from "@/components/ui/AchievementsSidebar";
 import VideoPlayer from "@/components/course/VideoPlayer";
 import CourseHeader from "@/components/course/CourseHeader";
-import { AchievementBadge, AchievementToast } from "@/components/course/AchievementBadge";
+import { AchievementToast } from "@/components/course/AchievementBadge";
 import type { Course } from "@/lib/types";
 
 export default function CoursePage() {
@@ -29,6 +31,8 @@ export default function CoursePage() {
     setSidebarOpen,
     newAchievement,
     setNewAchievement,
+    rightSidebarOpen,
+    setRightSidebarOpen,
   } = useCourseStore();
 
   const { progress, updateVideoProgress, markVideoComplete } =
@@ -82,6 +86,14 @@ export default function CoursePage() {
       if (saved !== null) setSidebarOpen(JSON.parse(saved));
     } catch {}
   }, [setSidebarOpen]);
+
+  // Restore right sidebar state from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("yt-edu-right-sidebar");
+      if (saved !== null) setRightSidebarOpen(JSON.parse(saved));
+    } catch {}
+  }, [setRightSidebarOpen]);
 
   // Dynamic browser tab title
   useEffect(() => {
@@ -157,7 +169,11 @@ export default function CoursePage() {
 
   return (
     <div className="min-h-screen">
-      <Navbar title={currentCourse.displayName || currentCourse.title} />
+      <Navbar
+        title={currentCourse.displayName || currentCourse.title}
+        achievementCount={progress?.achievements.length}
+        onAchievementsClick={() => setRightSidebarOpen(true)}
+      />
 
       <div className="flex">
         <Sidebar course={currentCourse} progress={progress} />
@@ -190,27 +206,28 @@ export default function CoursePage() {
                 />
               )}
 
-              {/* Achievements */}
-              {progress && progress.achievements.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-medium text-gray-400">
-                    Achievements Unlocked
-                  </h3>
-                  <div className="grid grid-cols-2 gap-1.5 md:grid-cols-3 lg:grid-cols-4">
-                    {progress.achievements.map((achievement) => (
-                      <AchievementBadge
-                        key={achievement.id}
-                        type={achievement.type}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
           </div>
         </main>
+
+        <AchievementsSidebar progress={progress} />
       </div>
+
+      {/* Mobile floating trophy button */}
+      <button
+        onClick={() => setRightSidebarOpen(true)}
+        className={`fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/25 transition-colors hover:bg-emerald-600 lg:hidden ${
+          rightSidebarOpen ? "hidden" : ""
+        }`}
+      >
+        <Trophy className="h-5 w-5 text-white" />
+        {progress && progress.achievements.length > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-white text-xs font-bold text-emerald-600">
+            {progress.achievements.length}
+          </span>
+        )}
+      </button>
 
       {/* Achievement toast */}
       <AchievementToast

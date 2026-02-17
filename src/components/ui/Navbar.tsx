@@ -1,13 +1,15 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { Coffee, GraduationCap, LogOut } from "lucide-react";
+import { Coffee, GraduationCap, LogOut, Trophy } from "lucide-react";
 
 interface NavbarProps {
   title?: string;
+  achievementCount?: number;
+  onAchievementsClick?: () => void;
 }
 
-export default function Navbar({ title }: NavbarProps) {
+export default function Navbar({ title, achievementCount, onAchievementsClick }: NavbarProps) {
   const { user, signOut } = useAuth();
 
   return (
@@ -28,6 +30,21 @@ export default function Navbar({ title }: NavbarProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        {onAchievementsClick && (
+          <button
+            onClick={onAchievementsClick}
+            className="relative rounded-lg p-2 text-gray-400 transition-colors hover:bg-white/10 hover:text-white lg:hidden"
+            title="Achievements"
+          >
+            <Trophy className="h-4 w-4" />
+            {achievementCount != null && achievementCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+                {achievementCount}
+              </span>
+            )}
+          </button>
+        )}
+
         <a
           href="https://buymeacoffee.com/debugluis"
           target="_blank"

@@ -1,4 +1,5 @@
 import { Timestamp } from "firebase/firestore";
+import type { LucideIcon } from "lucide-react";
 
 export interface User {
   uid: string;
@@ -87,7 +88,7 @@ export interface AchievementDefinition {
   type: AchievementType;
   title: string;
   description: string;
-  icon: string;
+  icon: LucideIcon;
 }
 
 export interface PlaylistProcessRequest {

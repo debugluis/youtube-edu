@@ -15,7 +15,7 @@ export function AchievementBadge({ type, isNew }: AchievementBadgeProps) {
 
   return (
     <div className="flex items-center gap-1.5 rounded-md bg-white/5 px-2 py-1.5">
-      <span className="text-sm">{achievement.icon}</span>
+      <achievement.icon className="h-4 w-4 shrink-0 text-emerald-400" />
       <div className="min-w-0">
         <p className="truncate text-xs font-medium text-white">{achievement.title}</p>
         <p className="truncate text-[11px] leading-tight text-gray-400">{achievement.description}</p>
@@ -61,13 +61,13 @@ export function AchievementToast({ type, onDismiss }: AchievementToastProps) {
               Achievement Unlocked
             </p>
             <div className="mt-3 flex items-center gap-3">
-              <motion.span
-                className="text-4xl"
+              <motion.div
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20"
                 animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.2, 1] }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                {ACHIEVEMENTS[type].icon}
-              </motion.span>
+                {(() => { const Icon = ACHIEVEMENTS[type].icon; return <Icon className="h-6 w-6 text-emerald-400" />; })()}
+              </motion.div>
               <div>
                 <p className="text-lg font-bold text-white">
                   {ACHIEVEMENTS[type].title}

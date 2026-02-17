@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Course, UserProgress, Achievement } from "@/lib/types";
+import type { Course, UserProgress, Achievement, AchievementType } from "@/lib/types";
 
 interface CourseState {
   courses: Course[];
@@ -10,6 +10,8 @@ interface CourseState {
   isProcessingPlaylist: boolean;
   sidebarOpen: boolean;
   newAchievement: Achievement | null;
+  rightSidebarOpen: boolean;
+  selectedAchievement: AchievementType | null;
 
   setCourses: (courses: Course[]) => void;
   addCourse: (course: Course) => void;
@@ -21,6 +23,9 @@ interface CourseState {
   toggleSidebar: () => void;
   setSidebarOpen: (open: boolean) => void;
   setNewAchievement: (achievement: Achievement | null) => void;
+  toggleRightSidebar: () => void;
+  setRightSidebarOpen: (open: boolean) => void;
+  setSelectedAchievement: (type: AchievementType | null) => void;
 }
 
 export const useCourseStore = create<CourseState>((set) => ({
@@ -32,6 +37,8 @@ export const useCourseStore = create<CourseState>((set) => ({
   isProcessingPlaylist: false,
   sidebarOpen: true,
   newAchievement: null,
+  rightSidebarOpen: false,
+  selectedAchievement: null,
 
   setCourses: (courses) => set({ courses }),
   addCourse: (course) =>
@@ -56,4 +63,15 @@ export const useCourseStore = create<CourseState>((set) => ({
     set({ sidebarOpen: open });
   },
   setNewAchievement: (achievement) => set({ newAchievement: achievement }),
+  toggleRightSidebar: () =>
+    set((state) => {
+      const next = !state.rightSidebarOpen;
+      try { localStorage.setItem("yt-edu-right-sidebar", JSON.stringify(next)); } catch {}
+      return { rightSidebarOpen: next };
+    }),
+  setRightSidebarOpen: (open) => {
+    try { localStorage.setItem("yt-edu-right-sidebar", JSON.stringify(open)); } catch {}
+    set({ rightSidebarOpen: open });
+  },
+  setSelectedAchievement: (type) => set({ selectedAchievement: type }),
 }));
