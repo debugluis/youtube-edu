@@ -8,7 +8,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCourseStore } from "@/stores/courseStore";
 import { useCourseProgress } from "@/hooks/useCourseProgress";
 import { getNextVideo } from "@/utils/progress";
-import { Coffee } from "lucide-react";
 import Navbar from "@/components/ui/Navbar";
 import Sidebar from "@/components/ui/Sidebar";
 import VideoPlayer from "@/components/course/VideoPlayer";
@@ -27,6 +26,7 @@ export default function CoursePage() {
     currentVideoId,
     setCurrentVideoId,
     sidebarOpen,
+    setSidebarOpen,
     newAchievement,
     setNewAchievement,
   } = useCourseStore();
@@ -74,6 +74,24 @@ export default function CoursePage() {
       }
     }
   }, [currentCourse, currentVideoId, progress, setCurrentVideoId]);
+
+  // Restore sidebar state from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("yt-edu-sidebar");
+      if (saved !== null) setSidebarOpen(JSON.parse(saved));
+    } catch {}
+  }, [setSidebarOpen]);
+
+  // Dynamic browser tab title
+  useEffect(() => {
+    if (currentCourse) {
+      document.title = `${currentCourse.displayName || currentCourse.title} | YouTube Edu`;
+    }
+    return () => {
+      document.title = "YouTube Edu - Learn with YouTube";
+    };
+  }, [currentCourse]);
 
   // Find current video object and its parent module
   const { currentVideo, currentModule } = useMemo(() => {
@@ -139,17 +157,17 @@ export default function CoursePage() {
 
   return (
     <div className="min-h-screen">
-      <Navbar title={currentCourse.displayName || currentCourse.title} showMenuButton />
+      <Navbar title={currentCourse.displayName || currentCourse.title} />
 
       <div className="flex">
         <Sidebar course={currentCourse} progress={progress} />
 
         <main
-          className={`flex-1 transition-all duration-300 ${
-            sidebarOpen ? "lg:ml-0" : ""
+          className={`min-w-0 flex-1 transition-all duration-300 ${
+            !sidebarOpen ? "pl-14 lg:pl-0" : ""
           }`}
         >
-          <div className="mx-auto max-w-4xl px-4 py-6 md:px-6">
+          <div className="mx-auto max-w-[1200px] px-2 pt-4 md:px-4">
             {/* Video player */}
             {currentVideo && (
               <VideoPlayer
@@ -160,8 +178,8 @@ export default function CoursePage() {
               />
             )}
 
-            {/* Module info */}
-            <div className="mt-8 space-y-6">
+            {/* Course content */}
+            <div className="mt-6 space-y-6">
               {currentModule && (
                 <CourseHeader
                   module={currentModule}
@@ -178,7 +196,7 @@ export default function CoursePage() {
                   <h3 className="text-sm font-medium text-gray-400">
                     Achievements Unlocked
                   </h3>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-1.5 md:grid-cols-3 lg:grid-cols-4">
                     {progress.achievements.map((achievement) => (
                       <AchievementBadge
                         key={achievement.id}
@@ -190,17 +208,6 @@ export default function CoursePage() {
               )}
             </div>
 
-            <div className="mt-12 flex justify-center pb-8">
-              <a
-                href="https://buymeacoffee.com/debugluis"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-3 text-base text-gray-300 transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/20 hover:text-white"
-              >
-                <Coffee className="h-4 w-4" />
-                Buy me a coffee
-              </a>
-            </div>
           </div>
         </main>
       </div>

@@ -31,7 +31,7 @@ export default function CourseHeader({
   const percentage = calculateModulePercentage(module, completedVideos);
 
   return (
-    <div className="space-y-4 rounded-xl border border-white/10 bg-[#1a1a2e] p-6">
+    <div className="space-y-3 rounded-xl border border-white/10 bg-[#1a1a2e] px-5 py-4">
       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
         <div className="flex items-center gap-1.5">
           <Video className="h-4 w-4" />
@@ -43,14 +43,17 @@ export default function CourseHeader({
         </div>
       </div>
 
-      <ProgressBar percentage={percentage} size="lg" showLabel />
+      <ProgressBar percentage={percentage} size="lg" />
 
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
+        <span className="text-sm text-gray-400">{percentage}% complete</span>
+        <span className="text-sm text-gray-400">
           {completedInModule} of {module.videos.length} videos completed
-        </p>
+        </span>
+      </div>
 
-        {isVideoCompleted && nextVideoId && (
+      {isVideoCompleted && nextVideoId && (
+        <div className="flex justify-end">
           <button
             onClick={onNextVideo}
             className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-600"
@@ -58,8 +61,8 @@ export default function CourseHeader({
             Next
             <SkipForward className="h-4 w-4" />
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

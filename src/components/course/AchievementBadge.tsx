@@ -14,11 +14,11 @@ export function AchievementBadge({ type, isNew }: AchievementBadgeProps) {
   const achievement = ACHIEVEMENTS[type];
 
   return (
-    <div className="flex items-center gap-2 rounded-lg bg-white/5 px-3 py-2">
-      <span className="text-xl">{achievement.icon}</span>
-      <div>
-        <p className="text-sm font-medium text-white">{achievement.title}</p>
-        <p className="text-xs text-gray-400">{achievement.description}</p>
+    <div className="flex items-center gap-1.5 rounded-md bg-white/5 px-2 py-1.5">
+      <span className="text-sm">{achievement.icon}</span>
+      <div className="min-w-0">
+        <p className="truncate text-xs font-medium text-white">{achievement.title}</p>
+        <p className="truncate text-[11px] leading-tight text-gray-400">{achievement.description}</p>
       </div>
       {isNew && (
         <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs text-emerald-400">

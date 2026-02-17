@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ExternalLink, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Circle } from "lucide-react";
 import type { Video } from "@/lib/types";
 
 declare global {
@@ -153,33 +153,25 @@ export default function VideoPlayer({
         )}
       </div>
 
-      {/* Video info */}
-      <div className="space-y-3">
+      {/* Video title + mark as watched */}
+      <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-xl font-semibold text-white">{video.title}</h2>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <a
-            href={`https://youtube.com/watch?v=${video.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300 transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <ExternalLink className="h-4 w-4" />
-            Watch on YouTube
-          </a>
-
-          <button
-            onClick={handleManualToggle}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition-colors ${
-              manualComplete || isCompleted
-                ? "bg-emerald-500/20 text-emerald-400"
-                : "border border-white/10 text-gray-300 hover:bg-white/5 hover:text-white"
-            }`}
-          >
+        <button
+          onClick={handleManualToggle}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-colors ${
+            manualComplete || isCompleted
+              ? "bg-emerald-500/20 text-emerald-400"
+              : "border border-white/10 text-gray-300 hover:bg-white/5 hover:text-white"
+          }`}
+        >
+          {manualComplete || isCompleted ? (
             <CheckCircle2 className="h-4 w-4" />
-            {manualComplete || isCompleted ? "Marked as watched" : "Mark as watched"}
-          </button>
-        </div>
+          ) : (
+            <Circle className="h-4 w-4" />
+          )}
+          {manualComplete || isCompleted ? "Watched" : "Mark as watched"}
+        </button>
       </div>
     </div>
   );

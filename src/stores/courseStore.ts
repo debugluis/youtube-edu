@@ -45,7 +45,15 @@ export const useCourseStore = create<CourseState>((set) => ({
   setIsLoadingCourses: (loading) => set({ isLoadingCourses: loading }),
   setIsProcessingPlaylist: (processing) =>
     set({ isProcessingPlaylist: processing }),
-  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
+  toggleSidebar: () =>
+    set((state) => {
+      const next = !state.sidebarOpen;
+      try { localStorage.setItem("yt-edu-sidebar", JSON.stringify(next)); } catch {}
+      return { sidebarOpen: next };
+    }),
+  setSidebarOpen: (open) => {
+    try { localStorage.setItem("yt-edu-sidebar", JSON.stringify(open)); } catch {}
+    set({ sidebarOpen: open });
+  },
   setNewAchievement: (achievement) => set({ newAchievement: achievement }),
 }));

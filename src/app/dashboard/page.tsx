@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Coffee } from "lucide-react";
 import {
   collection,
   query,
@@ -135,17 +134,6 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        <div className="mt-12 flex justify-center pb-8">
-          <a
-            href="https://buymeacoffee.com/debugluis"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-6 py-3 text-base text-gray-300 transition-colors hover:border-emerald-500/50 hover:bg-emerald-500/20 hover:text-white"
-          >
-            <Coffee className="h-4 w-4" />
-            Buy me a coffee
-          </a>
-        </div>
       </main>
     </div>
   );
