@@ -10,6 +10,7 @@ import {
   getDocs,
   doc,
   getDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +20,7 @@ import PlaylistInput from "@/components/dashboard/PlaylistInput";
 import CourseCard from "@/components/dashboard/CourseCard";
 import StatsOverview from "@/components/dashboard/StatsOverview";
 import type { Course, UserProgress } from "@/lib/types";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -26,11 +28,13 @@ export default function DashboardPage() {
   const {
     courses,
     setCourses,
+    removeCourse,
     isLoadingCourses,
     setIsLoadingCourses,
     progress,
     setProgress,
   } = useCourseStore();
+  const { t } = useTranslation();
   const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
@@ -74,6 +78,13 @@ export default function DashboardPage() {
     fetchCourses();
   }, [user, hasFetched, setCourses, setIsLoadingCourses, setProgress]);
 
+  const handleDeleteCourse = async (courseId: string) => {
+    if (!user) return;
+    await deleteDoc(doc(db, "courses", courseId));
+    await deleteDoc(doc(db, "progress", `${user.uid}_${courseId}`));
+    removeCourse(courseId);
+  };
+
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -106,7 +117,7 @@ export default function DashboardPage() {
           {/* Courses grid */}
           <div>
             <h2 className="mb-4 text-xl font-semibold text-white">
-              My Courses
+              {t("dashboard.myCourses")}
             </h2>
 
             {isLoadingCourses ? (
@@ -115,9 +126,7 @@ export default function DashboardPage() {
               </div>
             ) : courses.length === 0 ? (
               <div className="rounded-xl border border-dashed border-white/10 py-16 text-center">
-                <p className="text-gray-500">
-                  No courses yet. Paste a playlist URL above to get started.
-                </p>
+                <p className="text-gray-500">{t("dashboard.noCourses")}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -127,6 +136,7 @@ export default function DashboardPage() {
                     course={course}
                     progress={progress[course.id] || null}
                     onClick={() => router.push(`/course/${course.id}`)}
+                    onDelete={handleDeleteCourse}
                   />
                 ))}
               </div>

@@ -3,6 +3,7 @@
 import { BookOpen, CheckCircle2, Clock } from "lucide-react";
 import type { Course, UserProgress } from "@/lib/types";
 import { formatStudyTime, getTotalWatchedSeconds } from "@/utils/progress";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface StatsOverviewProps {
   courses: Course[];
@@ -10,6 +11,8 @@ interface StatsOverviewProps {
 }
 
 export default function StatsOverview({ courses, progressMap }: StatsOverviewProps) {
+  const { t } = useTranslation();
+
   const totalCourses = courses.length;
   const totalCompletedVideos = Object.values(progressMap).reduce(
     (total, p) => total + p.completedVideos.length,
@@ -21,21 +24,9 @@ export default function StatsOverview({ courses, progressMap }: StatsOverviewPro
   );
 
   const stats = [
-    {
-      icon: BookOpen,
-      label: "Courses",
-      value: totalCourses.toString(),
-    },
-    {
-      icon: CheckCircle2,
-      label: "Videos completed",
-      value: totalCompletedVideos.toString(),
-    },
-    {
-      icon: Clock,
-      label: "Study time",
-      value: formatStudyTime(totalStudyTime),
-    },
+    { icon: BookOpen, label: t("stats.courses"), value: totalCourses.toString() },
+    { icon: CheckCircle2, label: t("stats.videosCompleted"), value: totalCompletedVideos.toString() },
+    { icon: Clock, label: t("stats.studyTime"), value: formatStudyTime(totalStudyTime) },
   ];
 
   return (

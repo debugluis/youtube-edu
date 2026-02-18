@@ -7,6 +7,7 @@ export interface User {
   displayName: string;
   photoURL: string;
   createdAt: Timestamp;
+  language?: "en" | "es";
 }
 
 export interface Course {

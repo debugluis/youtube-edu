@@ -6,6 +6,7 @@ import type { Course, UserProgress } from "@/lib/types";
 import ModuleCard from "@/components/course/ModuleCard";
 import ProgressBar from "@/components/course/ProgressBar";
 import { calculateModulePercentage } from "@/utils/progress";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface SidebarProps {
   course: Course;
@@ -13,6 +14,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ course, progress }: SidebarProps) {
+  const { t } = useTranslation();
   const {
     sidebarOpen,
     setSidebarOpen,
@@ -24,7 +26,6 @@ export default function Sidebar({ course, progress }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile overlay backdrop */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -38,11 +39,10 @@ export default function Sidebar({ course, progress }: SidebarProps) {
         }`}
       >
         {sidebarOpen ? (
-          /* Expanded sidebar */
           <div className="w-80">
             <div className="flex items-center justify-between border-b border-white/10 p-4">
               <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                Overall Progress
+                {t("sidebar.overallProgress")}
               </p>
               <button
                 onClick={toggleSidebar}
@@ -54,10 +54,7 @@ export default function Sidebar({ course, progress }: SidebarProps) {
             </div>
 
             <div className="border-b border-white/10 px-4 py-3">
-              <ProgressBar
-                percentage={progress?.overallPercentage || 0}
-                size="lg"
-              />
+              <ProgressBar percentage={progress?.overallPercentage || 0} size="lg" />
             </div>
 
             <div className="space-y-1 p-3">
@@ -76,7 +73,6 @@ export default function Sidebar({ course, progress }: SidebarProps) {
             </div>
           </div>
         ) : (
-          /* Collapsed mini-sidebar */
           <div className="flex flex-col items-center py-3">
             <button
               onClick={toggleSidebar}
@@ -88,14 +84,9 @@ export default function Sidebar({ course, progress }: SidebarProps) {
 
             <div className="mt-4 flex flex-col gap-1.5">
               {course.modules.map((module, i) => {
-                const percentage = calculateModulePercentage(
-                  module,
-                  completedVideos
-                );
+                const percentage = calculateModulePercentage(module, completedVideos);
                 const isComplete = percentage === 100;
-                const isCurrentModule = module.videos.some(
-                  (v) => v.id === currentVideoId
-                );
+                const isCurrentModule = module.videos.some((v) => v.id === currentVideoId);
 
                 return (
                   <button
@@ -114,11 +105,7 @@ export default function Sidebar({ course, progress }: SidebarProps) {
                     }`}
                     title={module.title}
                   >
-                    {isComplete ? (
-                      <Check className="h-3.5 w-3.5" />
-                    ) : (
-                      i + 1
-                    )}
+                    {isComplete ? <Check className="h-3.5 w-3.5" /> : i + 1}
                   </button>
                 );
               })}

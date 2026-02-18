@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCourseStore } from "@/stores/courseStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Link, Loader2, Sparkles } from "lucide-react";
 
 interface PlaylistInputProps {
@@ -12,21 +13,21 @@ interface PlaylistInputProps {
 export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInputProps) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
-  const { isProcessingPlaylist, setIsProcessingPlaylist, addCourse } =
-    useCourseStore();
+  const { isProcessingPlaylist, setIsProcessingPlaylist, addCourse } = useCourseStore();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!url.trim()) {
-      setError("Enter a YouTube playlist URL");
+      setError(t("playlist.errorInvalid"));
       return;
     }
 
     const playlistPattern = /[?&]list=([a-zA-Z0-9_-]+)/;
     if (!playlistPattern.test(url)) {
-      setError("Invalid URL. Make sure it's a YouTube playlist");
+      setError(t("playlist.errorInvalid"));
       return;
     }
 
@@ -41,7 +42,7 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to process playlist");
+        throw new Error(data.error || t("playlist.errorGeneric"));
       }
 
       const { course } = await response.json();
@@ -49,7 +50,7 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
       setUrl("");
       onCourseCreated(course.id);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError(err instanceof Error ? err.message : t("playlist.errorGeneric"));
     } finally {
       setIsProcessingPlaylist(false);
     }
@@ -59,11 +60,9 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
     <div className="rounded-xl border border-white/10 bg-[#1a1a2e] p-6">
       <div className="mb-4 flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-emerald-500" />
-        <h2 className="text-lg font-semibold text-white">Create new course</h2>
+        <h2 className="text-lg font-semibold text-white">{t("playlist.createTitle")}</h2>
       </div>
-      <p className="mb-4 text-sm text-gray-400">
-        Paste a YouTube playlist URL and AI will organize it into modules
-      </p>
+      <p className="mb-4 text-sm text-gray-400">{t("playlist.createDesc")}</p>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="flex gap-2">
@@ -73,7 +72,7 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://youtube.com/playlist?list=..."
+              placeholder={t("playlist.placeholder")}
               className="w-full rounded-lg border border-white/10 bg-white/5 py-3 pl-10 pr-4 text-sm text-white placeholder-gray-600 outline-none transition-colors focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50"
               disabled={isProcessingPlaylist}
             />
@@ -86,17 +85,15 @@ export default function PlaylistInput({ userId, onCourseCreated }: PlaylistInput
             {isProcessingPlaylist ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Processing...
+                {t("playlist.processing")}
               </>
             ) : (
-              "Create Course"
+              t("playlist.createButton")
             )}
           </button>
         </div>
 
-        {error && (
-          <p className="text-sm text-red-400">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-400">{error}</p>}
       </form>
     </div>
   );

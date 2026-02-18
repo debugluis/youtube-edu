@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Circle } from "lucide-react";
 import type { Video } from "@/lib/types";
+import { useTranslation } from "@/hooks/useTranslation";
 
 declare global {
   interface Window {
@@ -18,18 +19,13 @@ interface VideoPlayerProps {
   onComplete: (method: "auto" | "manual") => void;
 }
 
-export default function VideoPlayer({
-  video,
-  isCompleted,
-  onProgress,
-  onComplete,
-}: VideoPlayerProps) {
+export default function VideoPlayer({ video, isCompleted, onProgress, onComplete }: VideoPlayerProps) {
+  const { t } = useTranslation();
   const playerRef = useRef<YT.Player | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [manualComplete, setManualComplete] = useState(isCompleted);
 
-  // Keep stable refs so the player init effect doesn't re-run on callback changes
   const onProgressRef = useRef(onProgress);
   const onCompleteRef = useRef(onComplete);
   const isCompletedRef = useRef(isCompleted);
@@ -38,26 +34,21 @@ export default function VideoPlayer({
   useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
   useEffect(() => { isCompletedRef.current = isCompleted; }, [isCompleted]);
 
-  // Load YouTube IFrame API
   useEffect(() => {
     if (window.YT) return;
-
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
     const firstScriptTag = document.getElementsByTagName("script")[0];
     firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
   }, []);
 
-  // Sync manualComplete when isCompleted prop changes (video switch)
   useEffect(() => {
     setManualComplete(isCompleted);
   }, [isCompleted]);
 
-  // Initialize player — only re-runs when video.id changes
   useEffect(() => {
     const startTracking = () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-
       intervalRef.current = setInterval(() => {
         if (!playerRef.current) return;
         try {
@@ -66,14 +57,11 @@ export default function VideoPlayer({
           if (duration > 0) {
             const percentage = (currentTime / duration) * 100;
             onProgressRef.current(currentTime, percentage);
-
             if (percentage >= 90 && !isCompletedRef.current) {
               onCompleteRef.current("auto");
             }
           }
-        } catch {
-          // Player might not be ready
-        }
+        } catch {}
       }, 10000);
     };
 
@@ -89,14 +77,9 @@ export default function VideoPlayer({
         playerRef.current.destroy();
         playerRef.current = null;
       }
-
       playerRef.current = new window.YT.Player("yt-player", {
         videoId: video.id,
-        playerVars: {
-          autoplay: 0,
-          modestbranding: 1,
-          rel: 0,
-        },
+        playerVars: { autoplay: 0, modestbranding: 1, rel: 0 },
         events: {
           onStateChange: (event: YT.OnStateChangeEvent) => {
             if (event.data === window.YT.PlayerState.PLAYING) {
@@ -107,7 +90,6 @@ export default function VideoPlayer({
             ) {
               stopTracking();
             }
-
             if (event.data === window.YT.PlayerState.ENDED) {
               onCompleteRef.current("auto");
             }
@@ -147,7 +129,7 @@ export default function VideoPlayer({
           <div className="pointer-events-none absolute right-3 top-3">
             <div className="flex items-center gap-1.5 rounded-full bg-emerald-500/90 px-3 py-1 text-xs font-medium text-white">
               <CheckCircle2 className="h-3.5 w-3.5" />
-              Completed
+              {t("course.completed")}
             </div>
           </div>
         )}
@@ -170,7 +152,7 @@ export default function VideoPlayer({
           ) : (
             <Circle className="h-4 w-4" />
           )}
-          {manualComplete || isCompleted ? "Watched" : "Mark as watched"}
+          {manualComplete || isCompleted ? t("course.watched") : t("course.markAsWatched")}
         </button>
       </div>
     </div>

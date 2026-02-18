@@ -3,8 +3,8 @@
 import type { Module } from "@/lib/types";
 import { Clock, Video, SkipForward } from "lucide-react";
 import ProgressBar from "./ProgressBar";
-import { calculateModulePercentage } from "@/utils/progress";
-import { formatStudyTime } from "@/utils/progress";
+import { calculateModulePercentage, formatStudyTime } from "@/utils/progress";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface CourseHeaderProps {
   module: Module;
@@ -21,13 +21,9 @@ export default function CourseHeader({
   nextVideoId,
   onNextVideo,
 }: CourseHeaderProps) {
-  const totalDurationSeconds = module.videos.reduce(
-    (sum, v) => sum + v.durationSeconds,
-    0
-  );
-  const completedInModule = module.videos.filter((v) =>
-    completedVideos.includes(v.id)
-  ).length;
+  const { t } = useTranslation();
+  const totalDurationSeconds = module.videos.reduce((sum, v) => sum + v.durationSeconds, 0);
+  const completedInModule = module.videos.filter((v) => completedVideos.includes(v.id)).length;
   const percentage = calculateModulePercentage(module, completedVideos);
 
   return (
@@ -35,7 +31,7 @@ export default function CourseHeader({
       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
         <div className="flex items-center gap-1.5">
           <Video className="h-4 w-4" />
-          <span>{module.videos.length} videos</span>
+          <span>{t("course.videos", { n: String(module.videos.length) })}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Clock className="h-4 w-4" />
@@ -46,9 +42,14 @@ export default function CourseHeader({
       <ProgressBar percentage={percentage} size="lg" />
 
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-400">{percentage}% complete</span>
         <span className="text-sm text-gray-400">
-          {completedInModule} of {module.videos.length} videos completed
+          {t("course.percentComplete", { n: String(percentage) })}
+        </span>
+        <span className="text-sm text-gray-400">
+          {t("course.videosCompletedOf", {
+            completed: String(completedInModule),
+            total: String(module.videos.length),
+          })}
         </span>
       </div>
 
@@ -58,7 +59,7 @@ export default function CourseHeader({
             onClick={onNextVideo}
             className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-600"
           >
-            Next
+            {t("course.next")}
             <SkipForward className="h-4 w-4" />
           </button>
         </div>

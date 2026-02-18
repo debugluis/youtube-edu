@@ -6,6 +6,7 @@ import { ACHIEVEMENTS } from "@/utils/achievements";
 import { motion, AnimatePresence } from "framer-motion";
 import type { UserProgress, AchievementType } from "@/lib/types";
 import { Timestamp } from "firebase/firestore";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const ALL_ACHIEVEMENT_TYPES: AchievementType[] = [
   "first_video",
@@ -29,14 +30,11 @@ function formatUnlockDate(unlockedAt: Timestamp | { seconds: number; nanoseconds
     unlockedAt instanceof Timestamp
       ? unlockedAt.toDate()
       : new Date(unlockedAt.seconds * 1000);
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export default function AchievementsSidebar({ progress }: AchievementsSidebarProps) {
+  const { t } = useTranslation();
   const {
     rightSidebarOpen,
     setRightSidebarOpen,
@@ -46,22 +44,14 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
   } = useCourseStore();
 
   const unlockedTypes = new Set(progress?.achievements.map((a) => a.type) || []);
-  const unlockedCount = unlockedTypes.size;
+  const achievementMap = new Map(progress?.achievements.map((a) => [a.type, a]) || []);
 
-  const achievementMap = new Map(
-    progress?.achievements.map((a) => [a.type, a]) || []
-  );
-
-  // Sort: unlocked first, then locked
   const sorted = [...ALL_ACHIEVEMENT_TYPES].sort((a, b) => {
-    const aUnlocked = unlockedTypes.has(a) ? 0 : 1;
-    const bUnlocked = unlockedTypes.has(b) ? 0 : 1;
-    return aUnlocked - bUnlocked;
+    return (unlockedTypes.has(a) ? 0 : 1) - (unlockedTypes.has(b) ? 0 : 1);
   });
 
   return (
     <>
-      {/* Mobile overlay backdrop */}
       {rightSidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -75,11 +65,10 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
         } ${rightSidebarOpen ? "block" : "hidden lg:block"}`}
       >
         {rightSidebarOpen ? (
-          /* Expanded sidebar */
           <div className="w-72">
             <div className="flex items-center justify-between border-b border-white/10 p-4">
               <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                Achievements
+                {t("course.achievements")}
               </p>
               <button
                 onClick={toggleRightSidebar}
@@ -88,13 +77,6 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
               >
                 <PanelRightClose className="h-4 w-4" />
               </button>
-            </div>
-
-            <div className="border-b border-white/10 px-4 py-3">
-              <p className="text-sm text-gray-400">
-                <span className="font-medium text-emerald-400">{unlockedCount}</span>
-                <span> / {ALL_ACHIEVEMENT_TYPES.length} unlocked</span>
-              </p>
             </div>
 
             <div className="space-y-1 p-3">
@@ -107,19 +89,16 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
 
                 if (!isUnlocked) {
                   return (
-                    <div
-                      key={type}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 opacity-30"
-                    >
+                    <div key={type} className="flex items-center gap-3 rounded-lg px-3 py-2.5">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5">
                         <Lock className="h-4 w-4 text-gray-500" />
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-gray-500">
-                          {def.title}
+                          {t(`achievement.${type}.title`)}
                         </p>
                         <p className="truncate text-xs text-gray-600">
-                          {def.description}
+                          {t(`achievement.${type}.description`)}
                         </p>
                       </div>
                     </div>
@@ -129,9 +108,7 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
                 return (
                   <div key={type}>
                     <button
-                      onClick={() =>
-                        setSelectedAchievement(isSelected ? null : type)
-                      }
+                      onClick={() => setSelectedAchievement(isSelected ? null : type)}
                       className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/5 ${
                         isSelected ? "bg-white/5" : ""
                       }`}
@@ -141,10 +118,10 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-white">
-                          {def.title}
+                          {t(`achievement.${type}.title`)}
                         </p>
                         <p className="truncate text-xs text-gray-400">
-                          {def.description}
+                          {t(`achievement.${type}.description`)}
                         </p>
                       </div>
                     </button>
@@ -160,7 +137,7 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
                         >
                           <div className="ml-14 pb-2 pr-3">
                             <p className="text-xs text-gray-500">
-                              Unlocked {formatUnlockDate(achievement.unlockedAt)}
+                              {t("achievement.unlockedOn", { date: formatUnlockDate(achievement.unlockedAt) })}
                             </p>
                           </div>
                         </motion.div>
@@ -172,7 +149,6 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
             </div>
           </div>
         ) : (
-          /* Collapsed mini-sidebar */
           <div className="flex flex-col items-center py-3">
             <button
               onClick={toggleRightSidebar}
@@ -201,15 +177,11 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
                     className={`flex h-9 w-9 items-center justify-center rounded-lg transition-colors ${
                       isUnlocked
                         ? "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
-                        : "bg-white/5 text-gray-500 opacity-30"
+                        : "bg-white/5 text-gray-500"
                     }`}
-                    title={def.title}
+                    title={t(`achievement.${type}.title`)}
                   >
-                    {isUnlocked ? (
-                      <Icon className="h-4 w-4" />
-                    ) : (
-                      <Lock className="h-3.5 w-3.5" />
-                    )}
+                    {isUnlocked ? <Icon className="h-4 w-4" /> : <Lock className="h-3.5 w-3.5" />}
                   </button>
                 );
               })}
