@@ -1,4 +1,4 @@
-import type { Course, UserProgress, Module } from "@/lib/types";
+import type { Course, UserProgress, Module, VideoProgress } from "@/lib/types";
 
 export function calculateOverallPercentage(
   course: Course,
@@ -17,6 +17,34 @@ export function calculateModulePercentage(
     completedVideos.includes(v.id)
   ).length;
   return Math.round((completed / module.videos.length) * 100);
+}
+
+export function calculateLiveOverallPercentage(
+  course: Course,
+  videoProgress: Record<string, VideoProgress>
+): number {
+  const totalDuration = course.modules.flatMap((m) => m.videos).reduce(
+    (sum, v) => sum + v.durationSeconds,
+    0
+  );
+  if (totalDuration === 0) return 0;
+  const watchedDuration = course.modules
+    .flatMap((m) => m.videos)
+    .reduce((sum, v) => sum + ((videoProgress[v.id]?.percentage ?? 0) / 100) * v.durationSeconds, 0);
+  return Math.min(100, Math.round((watchedDuration / totalDuration) * 100));
+}
+
+export function calculateLiveModulePercentage(
+  module: Module,
+  videoProgress: Record<string, VideoProgress>
+): number {
+  const totalDuration = module.videos.reduce((sum, v) => sum + v.durationSeconds, 0);
+  if (totalDuration === 0) return 0;
+  const watchedDuration = module.videos.reduce(
+    (sum, v) => sum + ((videoProgress[v.id]?.percentage ?? 0) / 100) * v.durationSeconds,
+    0
+  );
+  return Math.min(100, Math.round((watchedDuration / totalDuration) * 100));
 }
 
 export function isModuleComplete(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useCallback } from "react";
+import { useEffect, useMemo, useCallback, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -15,6 +15,7 @@ import AchievementsSidebar from "@/components/ui/AchievementsSidebar";
 import VideoPlayer from "@/components/course/VideoPlayer";
 import CourseHeader from "@/components/course/CourseHeader";
 import { AchievementToast } from "@/components/course/AchievementBadge";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Course } from "@/lib/types";
 
 export default function CoursePage() {
@@ -35,8 +36,16 @@ export default function CoursePage() {
     setRightSidebarOpen,
   } = useCourseStore();
 
+  const { t } = useTranslation();
   const { progress, updateVideoProgress, markVideoComplete } =
     useCourseProgress(user?.uid, currentCourse);
+
+  // Auth guard
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/");
+    }
+  }, [user, authLoading, router]);
 
   // Load course
   useEffect(() => {
@@ -142,6 +151,8 @@ export default function CoursePage() {
     [currentVideoId, updateVideoProgress]
   );
 
+  const [autoAdvanceCountdown, setAutoAdvanceCountdown] = useState<number | null>(null);
+
   const handleComplete = useCallback(
     (method: "auto" | "manual") => {
       if (currentVideoId) {
@@ -150,6 +161,36 @@ export default function CoursePage() {
     },
     [currentVideoId, markVideoComplete]
   );
+
+  const handleVideoEnd = useCallback(() => {
+    if (nextVideoId) {
+      setAutoAdvanceCountdown(5);
+    }
+  }, [nextVideoId]);
+
+  // Countdown tick
+  useEffect(() => {
+    if (autoAdvanceCountdown === null) return;
+    if (autoAdvanceCountdown === 0) {
+      if (nextVideoId) setCurrentVideoId(nextVideoId);
+      setAutoAdvanceCountdown(null);
+      return;
+    }
+    const timer = setTimeout(() => setAutoAdvanceCountdown((n) => (n !== null ? n - 1 : null)), 1000);
+    return () => clearTimeout(timer);
+  }, [autoAdvanceCountdown, nextVideoId, setCurrentVideoId]);
+
+  // Reset countdown on video change
+  useEffect(() => {
+    setAutoAdvanceCountdown(null);
+  }, [currentVideoId]);
+
+  const handleCancelAutoAdvance = useCallback(() => setAutoAdvanceCountdown(null), []);
+
+  const handleSkipNow = useCallback(() => {
+    if (nextVideoId) setCurrentVideoId(nextVideoId);
+    setAutoAdvanceCountdown(null);
+  }, [nextVideoId, setCurrentVideoId]);
 
   if (authLoading || !user) {
     return (
@@ -176,7 +217,7 @@ export default function CoursePage() {
       />
 
       <div className="flex">
-        <Sidebar course={currentCourse} progress={progress} />
+        <Sidebar course={currentCourse} progress={progress} videoProgress={progress?.videoProgress || {}} />
 
         <main
           className={`min-w-0 flex-1 transition-all duration-300 ${
@@ -191,6 +232,7 @@ export default function CoursePage() {
                 isCompleted={isVideoCompleted}
                 onProgress={handleProgress}
                 onComplete={handleComplete}
+                onVideoEnd={handleVideoEnd}
               />
             )}
 
@@ -200,9 +242,12 @@ export default function CoursePage() {
                 <CourseHeader
                   module={currentModule}
                   completedVideos={progress?.completedVideos || []}
+                  videoProgress={progress?.videoProgress || {}}
                   isVideoCompleted={isVideoCompleted}
                   nextVideoId={nextVideoId}
-                  onNextVideo={() => nextVideoId && setCurrentVideoId(nextVideoId)}
+                  countdown={autoAdvanceCountdown}
+                  onCancelAutoAdvance={handleCancelAutoAdvance}
+                  onSkipNow={handleSkipNow}
                 />
               )}
 

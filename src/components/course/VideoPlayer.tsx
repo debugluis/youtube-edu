@@ -17,9 +17,10 @@ interface VideoPlayerProps {
   isCompleted: boolean;
   onProgress: (watchedSeconds: number, percentage: number) => void;
   onComplete: (method: "auto" | "manual") => void;
+  onVideoEnd: () => void;
 }
 
-export default function VideoPlayer({ video, isCompleted, onProgress, onComplete }: VideoPlayerProps) {
+export default function VideoPlayer({ video, isCompleted, onProgress, onComplete, onVideoEnd }: VideoPlayerProps) {
   const { t } = useTranslation();
   const playerRef = useRef<YT.Player | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,10 +29,12 @@ export default function VideoPlayer({ video, isCompleted, onProgress, onComplete
 
   const onProgressRef = useRef(onProgress);
   const onCompleteRef = useRef(onComplete);
+  const onVideoEndRef = useRef(onVideoEnd);
   const isCompletedRef = useRef(isCompleted);
 
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
   useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+  useEffect(() => { onVideoEndRef.current = onVideoEnd; }, [onVideoEnd]);
   useEffect(() => { isCompletedRef.current = isCompleted; }, [isCompleted]);
 
   useEffect(() => {
@@ -62,7 +65,7 @@ export default function VideoPlayer({ video, isCompleted, onProgress, onComplete
             }
           }
         } catch {}
-      }, 10000);
+      }, 5000);
     };
 
     const stopTracking = () => {
@@ -79,7 +82,7 @@ export default function VideoPlayer({ video, isCompleted, onProgress, onComplete
       }
       playerRef.current = new window.YT.Player("yt-player", {
         videoId: video.id,
-        playerVars: { autoplay: 0, modestbranding: 1, rel: 0 },
+        playerVars: { autoplay: 0, rel: 0, iv_load_policy: 3 },
         events: {
           onStateChange: (event: YT.OnStateChangeEvent) => {
             if (event.data === window.YT.PlayerState.PLAYING) {
@@ -92,6 +95,7 @@ export default function VideoPlayer({ video, isCompleted, onProgress, onComplete
             }
             if (event.data === window.YT.PlayerState.ENDED) {
               onCompleteRef.current("auto");
+              onVideoEndRef.current();
             }
           },
         },

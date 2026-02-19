@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, CheckCircle2, Clock } from "lucide-react";
+import { BookOpen, CheckCircle2, Clock, Trophy } from "lucide-react";
 import type { Course, UserProgress } from "@/lib/types";
 import { formatStudyTime, getTotalWatchedSeconds } from "@/utils/progress";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -22,15 +22,21 @@ export default function StatsOverview({ courses, progressMap }: StatsOverviewPro
     (total, p) => total + getTotalWatchedSeconds(p),
     0
   );
+  const totalUnlocked = Object.values(progressMap).reduce(
+    (total, p) => total + p.achievements.length,
+    0
+  );
+  const totalPossible = courses.length * 10;
 
   const stats = [
     { icon: BookOpen, label: t("stats.courses"), value: totalCourses.toString() },
     { icon: CheckCircle2, label: t("stats.videosCompleted"), value: totalCompletedVideos.toString() },
     { icon: Clock, label: t("stats.studyTime"), value: formatStudyTime(totalStudyTime) },
+    { icon: Trophy, label: t("stats.achievements"), value: `${totalUnlocked}/${totalPossible}` },
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {stats.map((stat) => (
         <div
           key={stat.label}
@@ -40,7 +46,7 @@ export default function StatsOverview({ courses, progressMap }: StatsOverviewPro
             <stat.icon className="h-5 w-5 text-emerald-500" />
           </div>
           <div>
-            <p className="text-2xl font-bold text-white">{stat.value}</p>
+            <p className="text-lg font-bold text-white">{stat.value}</p>
             <p className="text-sm text-gray-400">{stat.label}</p>
           </div>
         </div>

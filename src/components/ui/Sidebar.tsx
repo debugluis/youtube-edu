@@ -1,19 +1,21 @@
 "use client";
 
 import { useCourseStore } from "@/stores/courseStore";
-import { PanelLeft, PanelLeftClose, Check } from "lucide-react";
-import type { Course, UserProgress } from "@/lib/types";
+import { BookOpen, Check } from "lucide-react";
+import { motion } from "framer-motion";
+import type { Course, UserProgress, VideoProgress } from "@/lib/types";
 import ModuleCard from "@/components/course/ModuleCard";
 import ProgressBar from "@/components/course/ProgressBar";
-import { calculateModulePercentage } from "@/utils/progress";
+import { calculateModulePercentage, calculateLiveOverallPercentage } from "@/utils/progress";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface SidebarProps {
   course: Course;
   progress: UserProgress | null;
+  videoProgress: Record<string, VideoProgress>;
 }
 
-export default function Sidebar({ course, progress }: SidebarProps) {
+export default function Sidebar({ course, progress, videoProgress }: SidebarProps) {
   const { t } = useTranslation();
   const {
     sidebarOpen,
@@ -23,6 +25,7 @@ export default function Sidebar({ course, progress }: SidebarProps) {
     setCurrentVideoId,
   } = useCourseStore();
   const completedVideos = progress?.completedVideos || [];
+  const liveOverallPercentage = calculateLiveOverallPercentage(course, videoProgress);
 
   return (
     <>
@@ -39,30 +42,30 @@ export default function Sidebar({ course, progress }: SidebarProps) {
         }`}
       >
         {sidebarOpen ? (
-          <div className="w-80">
-            <div className="flex items-center justify-between border-b border-white/10 p-4">
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                {t("sidebar.overallProgress")}
-              </p>
-              <button
-                onClick={toggleSidebar}
-                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
-                title="Collapse sidebar"
-              >
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
+          <motion.div key="expanded" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="w-80">
+            <div className="border-b border-white/10 px-4 pt-3 pb-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+                  {t("sidebar.overallProgress")}
+                </p>
+                <button
+                  onClick={toggleSidebar}
+                  className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                  title="Collapse sidebar"
+                >
+                  <BookOpen className="h-4 w-4" />
+                </button>
+              </div>
+              <ProgressBar percentage={liveOverallPercentage} size="lg" />
             </div>
 
-            <div className="border-b border-white/10 px-4 py-3">
-              <ProgressBar percentage={progress?.overallPercentage || 0} size="lg" />
-            </div>
-
-            <div className="space-y-1 p-3">
+            <div className="space-y-0.5 p-2">
               {course.modules.map((module) => (
                 <ModuleCard
                   key={module.id}
                   module={module}
                   completedVideos={completedVideos}
+                  videoProgress={videoProgress}
                   currentVideoId={currentVideoId}
                   onVideoSelect={(videoId) => {
                     setCurrentVideoId(videoId);
@@ -71,7 +74,7 @@ export default function Sidebar({ course, progress }: SidebarProps) {
                 />
               ))}
             </div>
-          </div>
+          </motion.div>
         ) : (
           <div className="flex flex-col items-center py-3">
             <button
@@ -79,7 +82,7 @@ export default function Sidebar({ course, progress }: SidebarProps) {
               className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
               title="Expand sidebar"
             >
-              <PanelLeft className="h-4 w-4" />
+              <BookOpen className="h-4 w-4" />
             </button>
 
             <div className="mt-4 flex flex-col gap-1.5">

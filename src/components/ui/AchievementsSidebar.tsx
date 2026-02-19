@@ -1,7 +1,7 @@
 "use client";
 
 import { useCourseStore } from "@/stores/courseStore";
-import { PanelRight, PanelRightClose, Lock } from "lucide-react";
+import { Trophy, Lock } from "lucide-react";
 import { ACHIEVEMENTS } from "@/utils/achievements";
 import { motion, AnimatePresence } from "framer-motion";
 import type { UserProgress, AchievementType } from "@/lib/types";
@@ -65,21 +65,23 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
         } ${rightSidebarOpen ? "block" : "hidden lg:block"}`}
       >
         {rightSidebarOpen ? (
-          <div className="w-72">
-            <div className="flex items-center justify-between border-b border-white/10 p-4">
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-                {t("course.achievements")}
-              </p>
-              <button
-                onClick={toggleRightSidebar}
-                className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
-                title="Collapse sidebar"
-              >
-                <PanelRightClose className="h-4 w-4" />
-              </button>
+          <motion.div key="expanded" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} className="w-72">
+            <div className="border-b border-white/10 px-4 pt-3 pb-3">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
+                  {t("course.achievements")}
+                </p>
+                <button
+                  onClick={toggleRightSidebar}
+                  className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
+                  title="Collapse sidebar"
+                >
+                  <Trophy className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-1 p-3">
+            <div className="space-y-0.5 p-2">
               {sorted.map((type) => {
                 const def = ACHIEVEMENTS[type];
                 const Icon = def.icon;
@@ -89,7 +91,7 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
 
                 if (!isUnlocked) {
                   return (
-                    <div key={type} className="flex items-center gap-3 rounded-lg px-3 py-2.5">
+                    <div key={type} className="flex items-center gap-3 rounded-lg px-3 py-1.5">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5">
                         <Lock className="h-4 w-4 text-gray-500" />
                       </div>
@@ -109,7 +111,7 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
                   <div key={type}>
                     <button
                       onClick={() => setSelectedAchievement(isSelected ? null : type)}
-                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-white/5 ${
+                      className={`flex w-full items-center gap-3 rounded-lg px-3 py-1.5 text-left transition-colors hover:bg-white/5 ${
                         isSelected ? "bg-white/5" : ""
                       }`}
                     >
@@ -147,7 +149,7 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         ) : (
           <div className="flex flex-col items-center py-3">
             <button
@@ -155,7 +157,7 @@ export default function AchievementsSidebar({ progress }: AchievementsSidebarPro
               className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
               title="Expand achievements"
             >
-              <PanelRight className="h-4 w-4" />
+              <Trophy className="h-4 w-4" />
             </button>
 
             <div className="mt-4 flex flex-col gap-1.5">

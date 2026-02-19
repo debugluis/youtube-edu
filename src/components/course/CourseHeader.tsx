@@ -1,42 +1,78 @@
 "use client";
 
-import type { Module } from "@/lib/types";
-import { Clock, Video, SkipForward } from "lucide-react";
+import type { Module, VideoProgress } from "@/lib/types";
+import { Clock, Video, SkipForward, X } from "lucide-react";
 import ProgressBar from "./ProgressBar";
-import { calculateModulePercentage, formatStudyTime } from "@/utils/progress";
+import { calculateLiveModulePercentage, formatStudyTime } from "@/utils/progress";
 import { useTranslation } from "@/hooks/useTranslation";
 
 interface CourseHeaderProps {
   module: Module;
   completedVideos: string[];
+  videoProgress: Record<string, VideoProgress>;
   isVideoCompleted: boolean;
   nextVideoId: string | null;
-  onNextVideo: () => void;
+  countdown: number | null;
+  onCancelAutoAdvance: () => void;
+  onSkipNow: () => void;
 }
 
 export default function CourseHeader({
   module,
   completedVideos,
+  videoProgress,
   isVideoCompleted,
   nextVideoId,
-  onNextVideo,
+  countdown,
+  onCancelAutoAdvance,
+  onSkipNow,
 }: CourseHeaderProps) {
   const { t } = useTranslation();
   const totalDurationSeconds = module.videos.reduce((sum, v) => sum + v.durationSeconds, 0);
   const completedInModule = module.videos.filter((v) => completedVideos.includes(v.id)).length;
-  const percentage = calculateModulePercentage(module, completedVideos);
+  const percentage = calculateLiveModulePercentage(module, videoProgress);
 
   return (
     <div className="space-y-3 rounded-xl border border-white/10 bg-[#1a1a2e] px-5 py-4">
-      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
-        <div className="flex items-center gap-1.5">
-          <Video className="h-4 w-4" />
-          <span>{t("course.videos", { n: String(module.videos.length) })}</span>
+      {/* Stats row — buttons slot in on the right, no height change */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4 text-sm text-gray-400">
+          <div className="flex items-center gap-1.5">
+            <Video className="h-4 w-4" />
+            <span>{t("course.videos", { n: String(module.videos.length) })}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-4 w-4" />
+            <span>{formatStudyTime(totalDurationSeconds)}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Clock className="h-4 w-4" />
-          <span>{formatStudyTime(totalDurationSeconds)}</span>
-        </div>
+
+        {isVideoCompleted && (
+          <div className="flex items-center gap-2">
+            {countdown !== null && (
+              <button
+                onClick={onCancelAutoAdvance}
+                className="flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs text-gray-500 transition-colors hover:bg-white/15 hover:text-gray-300"
+              >
+                <X className="h-3 w-3" />
+                {countdown}s
+              </button>
+            )}
+            {nextVideoId ? (
+              <button
+                onClick={onSkipNow}
+                className="flex items-center gap-1.5 rounded-md bg-emerald-500 px-3 py-0.5 text-xs font-medium text-white transition-colors hover:bg-emerald-600"
+              >
+                {t("course.next")}
+                <SkipForward className="h-3 w-3" />
+              </button>
+            ) : (
+              <span className="text-xs font-medium text-emerald-400">
+                {t("course.courseComplete")}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <ProgressBar percentage={percentage} size="lg" />
@@ -52,18 +88,6 @@ export default function CourseHeader({
           })}
         </span>
       </div>
-
-      {isVideoCompleted && nextVideoId && (
-        <div className="flex justify-end">
-          <button
-            onClick={onNextVideo}
-            className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-emerald-600"
-          >
-            {t("course.next")}
-            <SkipForward className="h-4 w-4" />
-          </button>
-        </div>
-      )}
     </div>
   );
 }

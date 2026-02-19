@@ -61,6 +61,7 @@ const translations = {
     "stats.courses": "Courses",
     "stats.videosCompleted": "Videos Completed",
     "stats.studyTime": "Study Time",
+    "stats.achievements": "Achievements",
 
     // Landing page
     "landing.howItWorks": "How it works",
@@ -81,6 +82,9 @@ const translations = {
     "course.markAsWatched": "Mark as watched",
     "course.watchOnYouTube": "Watch on YouTube",
     "course.next": "Next",
+    "course.autoAdvance": "Up next in {n}s",
+    "course.cancelAutoAdvance": "Cancel",
+    "course.courseComplete": "Course complete!",
 
     // Course page — header stats
     "course.videos": "{n} videos",
@@ -193,6 +197,7 @@ const translations = {
     "stats.courses": "Cursos",
     "stats.videosCompleted": "Videos Completados",
     "stats.studyTime": "Tiempo de Estudio",
+    "stats.achievements": "Logros",
 
     // Landing page
     "landing.howItWorks": "Cómo funciona",
@@ -213,6 +218,9 @@ const translations = {
     "course.markAsWatched": "Marcar como visto",
     "course.watchOnYouTube": "Ver en YouTube",
     "course.next": "Siguiente",
+    "course.autoAdvance": "Siguiente en {n}s",
+    "course.cancelAutoAdvance": "Cancelar",
+    "course.courseComplete": "¡Curso completado!",
 
     // Course page — header stats
     "course.videos": "{n} videos",
