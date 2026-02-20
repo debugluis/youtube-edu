@@ -32,6 +32,11 @@ export default function VideoPlayer({ video, isCompleted, onProgress, onComplete
   const onVideoEndRef = useRef(onVideoEnd);
   const isCompletedRef = useRef(isCompleted);
 
+  // Refs to track time-based end-of-video events (reset on each new video)
+  const completedAt20Ref = useRef(false);
+  const fullscreenExitedAt10Ref = useRef(false);
+  const videoEndTriggeredAt7Ref = useRef(false);
+
   useEffect(() => { onProgressRef.current = onProgress; }, [onProgress]);
   useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
   useEffect(() => { onVideoEndRef.current = onVideoEnd; }, [onVideoEnd]);
@@ -60,12 +65,31 @@ export default function VideoPlayer({ video, isCompleted, onProgress, onComplete
           if (duration > 0) {
             const percentage = (currentTime / duration) * 100;
             onProgressRef.current(currentTime, percentage);
-            if (percentage >= 90 && !isCompletedRef.current) {
+
+            const remaining = duration - currentTime;
+
+            // 20s remaining: mark as complete
+            if (remaining <= 20 && !completedAt20Ref.current && !isCompletedRef.current) {
+              completedAt20Ref.current = true;
               onCompleteRef.current("auto");
+            }
+
+            // 10s remaining: exit fullscreen
+            if (remaining <= 10 && !fullscreenExitedAt10Ref.current) {
+              fullscreenExitedAt10Ref.current = true;
+              if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+              }
+            }
+
+            // 7s remaining: start auto-advance countdown
+            if (remaining <= 7 && !videoEndTriggeredAt7Ref.current) {
+              videoEndTriggeredAt7Ref.current = true;
+              onVideoEndRef.current();
             }
           }
         } catch {}
-      }, 5000);
+      }, 1000);
     };
 
     const stopTracking = () => {
@@ -76,6 +100,11 @@ export default function VideoPlayer({ video, isCompleted, onProgress, onComplete
     };
 
     const initPlayer = () => {
+      // Reset time-based flags for the incoming video
+      completedAt20Ref.current = false;
+      fullscreenExitedAt10Ref.current = false;
+      videoEndTriggeredAt7Ref.current = false;
+
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
@@ -94,8 +123,14 @@ export default function VideoPlayer({ video, isCompleted, onProgress, onComplete
               stopTracking();
             }
             if (event.data === window.YT.PlayerState.ENDED) {
-              onCompleteRef.current("auto");
-              onVideoEndRef.current();
+              // Fallback for very short videos or edge cases missed by the interval
+              if (!completedAt20Ref.current && !isCompletedRef.current) {
+                onCompleteRef.current("auto");
+              }
+              if (!videoEndTriggeredAt7Ref.current) {
+                videoEndTriggeredAt7Ref.current = true;
+                onVideoEndRef.current();
+              }
             }
           },
         },

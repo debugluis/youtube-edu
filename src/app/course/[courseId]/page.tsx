@@ -164,7 +164,7 @@ export default function CoursePage() {
 
   const handleVideoEnd = useCallback(() => {
     if (nextVideoId) {
-      setAutoAdvanceCountdown(5);
+      setAutoAdvanceCountdown(8);
     }
   }, [nextVideoId]);
 
